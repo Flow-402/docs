@@ -1,6 +1,17 @@
 {
 	"openapi": "3.1.0",
-	"info": { "title": "x402 Facilitator", "version": "0.1.0" },
+	"info": {
+    "title": "Flow402 - x402 Facilitator for USDC",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.flow402.net"
+    }
+  ],
 	"paths": {
 		"/health": {
 			"get": {
