@@ -162,14 +162,13 @@
 								"fee": "0.005",
 								"feeTxHash": "0x...feeTx",
 								"intentId": "pi_...",
-								"merchant": "0x...merchant",
+								"merchant": "0x...merchantAddress",
 								"network": "base-sepolia"
 							}
 						]
 					}
 				},
 				"type": "object",
-				"required": ["settled", "txHash"],
 				"title": "SettleResponse"
 			},
 			"SettleSimpleRequest": {
@@ -186,7 +185,7 @@
 					},
 					"feeTxHash": {
 						"anyOf": [{ "type": "string" }, { "type": "null" }],
-						"title": "Feetxhash",
+						"title": "FeeTxhash",
 						"example": ["0x...feeTx"]
 					},
 					"intentId": {
@@ -210,12 +209,16 @@
 					"scheme": {
 						"type": "string",
 						"title": "Scheme",
-						"default": "exact"
+						"default": "exact",
+            "examples": ["exact", "transfer"]
 					},
-					"network": { "type": "string", "title": "Network" }
+					"network": {
+            "type": "string",
+            "title": "Network",
+            "examples": ["base", "base-sepolia"]
+          }
 				},
 				"type": "object",
-				"required": ["network"],
 				"title": "SupportedKind"
 			},
 			"SupportedResponse": {
@@ -229,7 +232,6 @@
 					}
 				},
 				"type": "object",
-				"required": ["kinds"],
 				"title": "SupportedResponse"
 			},
 			"ValidationError": {
@@ -275,13 +277,22 @@
 					}
 				},
 				"type": "object",
-				"required": ["verified", "intentId", "nonce", "expiresAt"],
 				"title": "VerifyResponse"
 			},
 			"VerifySimpleRequest": {
 				"properties": {
-					"from": { "type": "string", "title": "From" },
-					"to": { "type": "string", "title": "To" },
+					"from": {
+            "description": "Payer USDC address",
+            "type": "string",
+            "title": "From",
+            "examples": ["0x...payerAddress"]
+          },
+					"to": {
+            "description": "Merchant USDC address",
+            "type": "string",
+            "title": "To",
+            "examples": ["0x...merchantAddress"]
+          },
 					"amount": {
 						"anyOf": [
 							{ "type": "number" },
@@ -295,16 +306,18 @@
 					"network": {
 						"type": "string",
 						"title": "Network",
-						"default": "base"
+						"default": "base",
+            "examples": ["base", "base-sepolia"]
 					},
 					"scheme": {
 						"type": "string",
 						"title": "Scheme",
-						"default": "exact"
+						"default": "exact",
+            "examples": ["exact", "transfer"]
 					}
 				},
 				"type": "object",
-				"required": ["from", "to", "amount"],
+				"required": ["from", "to", "amount", "network", "scheme"],
 				"title": "VerifySimpleRequest"
 			},
       "HealthResponse": {
