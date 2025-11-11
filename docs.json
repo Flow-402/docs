@@ -17,8 +17,13 @@
             "group": "Getting started",
             "pages": [
               "index",
-              "quickstart",
-              "examples"
+              {
+                "group": "Examples",
+                "pages": [
+                  "examples/nodejs",
+                  "examples/python"
+                ]
+              }
             ]
           }
         ]

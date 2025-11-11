@@ -1,0 +1,207 @@
+---
+title: "Python + FastAPI"
+description: "Integrate Flow402 protocol within your FastAPI application."
+---
+
+## Create your project
+
+Initialize a new fastapi project.
+
+## Server-side
+
+Follow the steps below to setup your server.
+
+<Steps>
+    <Step title="Create your api project">
+    ```bash shell
+    mkdir my-fastapi-project
+    cd my-fastapi-project
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install fastapi uvicorn httpx
+    ```
+    </Step>
+    <Step title="Setup Express">
+        ```python main.py lines
+        from typing import Optional, Dict, Any
+        import httpx
+        from fastapi import FastAPI, Depends, HTTPException, Body
+
+        app = FastAPI()
+
+        # MIDDLEWARES
+
+        # ENDPOINTS
+
+        if __name__ == "__main__":
+            import uvicorn
+            uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+        ```
+    </Step>
+    <Step title="Add middleware">
+        ```python main.py lines
+        # MIDDLEWARES
+        async def settle_with_flow402(
+            *,
+            nonce: str,
+            tx_hash: str,
+            fee_tx_hash: Optional[str],
+            intent_id: str,
+        ) -> Dict[str, Any]:
+            """
+            Call Flow402 simplified /settle endpoint.
+            """
+            url = "https://api.flow402.net/settle"
+
+            payload = {
+                "nonce": nonce,
+                "txHash": tx_hash,
+                "feeTxHash": fee_tx_hash,
+                "intentId": intent_id,
+            }
+
+            async with httpx.AsyncClient() as client:
+                res = await client.post(url, json=payload)
+                # If 4xx/5xx: raise for debug, you can also handle gracefully
+                res.raise_for_status()
+                return res.json()
+
+        async def require_payment(body: Dict[str, Any] = Body(...)):
+            """
+            FastAPI dependency that checks payment against Flow402.
+            It mimics the Express middleware `requirePayment`.
+            """
+
+            nonce = body.get("nonce")
+            intent_id = body.get("intentId")
+            tx_hash = body.get("txHash")
+            fee_tx_hash = body.get("feeTxHash")
+
+            # Return 402 "Payment required" if missing fields
+            if not nonce or not intent_id or not tx_hash:
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "payment_required",
+                        "message": "Missing Flow402 payment body.",
+                        "expectedBody": ["nonce", "intentId", "txHash"],
+                        "optionalBody": "feeTxHash",
+                    },
+                )
+
+            # Call Flow402 facilitator
+            result = await settle_with_flow402(
+                nonce=nonce,
+                tx_hash=tx_hash,
+                fee_tx_hash=fee_tx_hash,
+                intent_id=intent_id,
+            )
+
+            # Return 402 if payment not settled
+            if not result.get("settled"):
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "payment_not_settled",
+                        "message": "Payment not settled on-chain.",
+                        "facilitatorResponse": result,
+                    },
+                )
+
+            # Attach receipt-like info for the endpoint handler
+            return {
+                "txHash": result.get("txHash"),
+                "receipt": result.get("receipt"),
+            }
+        ```
+    </Step>
+    <Step title="Create your endpoints">
+        ```python main.py lines
+        # ENDPOINTS
+
+        # Free/public endpoint
+        @app.get("/api/free")
+        async def free_endpoint():
+            return {
+                "status": "ok",
+                "type": "free",
+                "message": "This is a free endpoint. No payment required.",
+            }
+
+        # Premium endpoint protected with Flow402
+        @app.post("/api/premium")
+        async def premium_endpoint(payment = Depends(require_payment)):
+            return {
+                "status": "ok",
+                "type": "premium",
+                "message": "Welcome to the premium API",
+                "payment": payment,
+            }
+        ```
+    </Step>
+</Steps>
+
+## Client-side
+
+Follow the steps below to request Flow402 protocol from your shell.
+
+<Steps>
+    <Step title="Call /verify endpoint">
+    ```bash shell
+    curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "from": "0xPAYER",
+        "to": "0xMERCHANT",
+        "amount": "0.10",
+        "network": "base",
+        "scheme": "exact"
+    }' \
+    https://api.flow402/verify
+    ```
+    </Step>
+    <Step title="Send two transactions using USDC and Base network">
+        Use any wallet to send a transaction **from PAYER** address to **your MERCHANT** address.
+        
+        Also send a transaction **from PAYER** address to **our FACILITATOR** address **_0xc4a35c792a020d55218b83c5d77172b86b934dce_**.
+        This transaction's amount needs to be **greater than 0.001 USDC** and **greater than AMOUNT*0.1** (1% tax fee).
+        
+    </Step>
+    <Step title="Call your paid api endpoint">
+    ```bash shell
+    curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "nonce": "nonce-given-from-first-request",
+        "intentId": "intentId-given-from-first-request",
+        "txHash": "transaction-hash-from-payer-to-merchant",
+        "feeTxHash": "transaction-hash-from-payer-to-facilitator",
+    }' \
+    http://localhost:8000/api/premium
+    ```
+
+    Response:
+
+    ```json json lines
+    {
+        "status": "ok",
+        "type": "premium",
+        "message": "Welcome to the premium API 🚀",
+        "payment": {
+            "txHash": "0xMERCHANT_TX_HASH",
+            "receipt": {
+                "intentId": "pi_...",
+                "amount": "0.10",
+                "currency": "USDC",
+                "network": "base",
+                "merchant": "0xYOUR_MERCHANT_ADDRESS",
+                "facilitatorRecipient": "0xc4a35c792a020d55218b83c5d77172b86b934dce",
+                "fee": "0.001",
+                "feeTxHash": "0xFEE_TX_HASH"
+            }
+        }
+    }
+    ```
+    </Step>
+
+</Steps>

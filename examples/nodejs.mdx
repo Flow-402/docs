@@ -1,0 +1,195 @@
+---
+title: "NodeJS + Express"
+description: "Integrate Flow402 protocol within your Express application."
+---
+
+## Create your project
+
+Initialize a new express project.
+
+## Server-side
+
+Follow the steps below to setup your server.
+
+<Steps>
+    <Step title="Create your api project">
+    ```bash shell
+    mkdir my-express-project
+    cd my-express-project
+    npm init -y
+    npm install express axios
+    ```
+    </Step>
+    <Step title="Setup Express">
+        ```js main.js lines
+        const express = require('express')
+        const axios = require('axios')
+
+        const app = express()
+        app.use(express.json())
+
+        // MIDDLEWARES
+
+        // ENDPOINTS
+
+        app.listen(8000)
+        ```
+    </Step>
+    <Step title="Add middleware">
+        ```js main.js lines
+        // MIDDLEWARES
+        async function settleWithFlow402({ nonce, txHash, feeTxHash, intentId }) {
+            const url = "https://api.flow402.net/settle"
+
+            const payload = {
+                nonce,
+                txHash,
+                feeTxHash,
+                intentId
+            }
+
+            const res = await axios.post(url, payload, {
+                headers: { 'Content-Type': 'application/json' }
+            })
+
+            return res.data
+        }
+
+        async function requirePayment(req, res, next) {
+            const nonce = req.body["nonce"]
+            const intentId = req.body["intentId"]
+            const txHash = req.body["txHash"]
+            const feeTxHash = req.body["feeTxHash"] || null
+
+            // Return 402 status code "Payment required"
+            if (!nonce || !intentId || !txHash) {
+                return res.status(402).json({
+                    error: 'payment_required',
+                    message: 'Missing Flow402 payment body.',
+                    expectedBody: [
+                        "nonce",
+                        "intentId",
+                        "txHash"
+                    ],
+                    optionalBody: "feeTxHash"
+                })
+            }
+
+            const result = await settleWithFlow402({
+                nonce,
+                txHash,
+                feeTxHash,
+                intentId
+            })
+
+            // Return 402 status code "Payment required"
+            if (!result.settled) {
+                return res.status(402).json({
+                    error: 'payment_not_settled',
+                    message: 'Payment not settled on-chain.',
+                    facilitatorResponse: result
+                })
+            }
+
+            // Attach receipt to request to be handled
+            req.flow402 = {
+                txHash: result.txHash,
+                receipt: result.receipt
+            }
+
+            return next()
+        }
+        ```
+    </Step>
+    <Step title="Create your endpoints">
+        ```js main.js lines
+        // ENDPOINTS
+
+        // Free/public endpoint
+        app.get('/api/free', (req, res) => {
+            res.json({
+                status: 'ok',
+                type: 'free',
+                message: 'This is a free endpoint. No payment required.'
+            })
+        })
+
+        // Premium endpoint protected with Flow402
+        app.get('/api/premium', requirePayment, (req, res) => {
+            const paymentInfo = req.flow402
+
+            res.json({
+                status: 'ok',
+                type: 'premium',
+                message: 'Welcome to the premium API',
+                payment: paymentInfo
+            })
+        })
+        ```
+    </Step>
+</Steps>
+
+## Client-side
+
+Follow the steps below to request Flow402 protocol from your shell.
+
+<Steps>
+    <Step title="Call /verify endpoint">
+    ```bash shell
+    curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "from": "0xPAYER",
+        "to": "0xMERCHANT",
+        "amount": "0.10",
+        "network": "base",
+        "scheme": "exact"
+    }' \
+    https://api.flow402/verify
+    ```
+    </Step>
+    <Step title="Send two transactions using USDC and Base network">
+        Use any wallet to send a transaction **from PAYER** address to **your MERCHANT** address.
+        
+        Also send a transaction **from PAYER** address to **our FACILITATOR** address **_0xc4a35c792a020d55218b83c5d77172b86b934dce_**.
+        This transaction's amount needs to be **greater than 0.001 USDC** and **greater than AMOUNT*0.1** (1% tax fee).
+        
+    </Step>
+    <Step title="Call your paid api endpoint">
+    ```bash shell
+    curl -s -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "nonce": "nonce-given-from-first-request",
+        "intentId": "intentId-given-from-first-request",
+        "txHash": "transaction-hash-from-payer-to-merchant",
+        "feeTxHash": "transaction-hash-from-payer-to-facilitator",
+    }' \
+    http://localhost:8000/api/premium
+    ```
+
+    Response:
+
+    ```json json lines
+    {
+        "status": "ok",
+        "type": "premium",
+        "message": "Welcome to the premium API 🚀",
+        "payment": {
+            "txHash": "0xMERCHANT_TX_HASH",
+            "receipt": {
+                "intentId": "pi_...",
+                "amount": "0.10",
+                "currency": "USDC",
+                "network": "base",
+                "merchant": "0xYOUR_MERCHANT_ADDRESS",
+                "facilitatorRecipient": "0xc4a35c792a020d55218b83c5d77172b86b934dce",
+                "fee": "0.001",
+                "feeTxHash": "0xFEE_TX_HASH"
+            }
+        }
+    }
+    ```
+    </Step>
+
+</Steps>
