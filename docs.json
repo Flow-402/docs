@@ -40,10 +40,10 @@
           {
             "group": "Endpoints",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/supported",
+              "api-reference/endpoint/health",
+              "api-reference/endpoint/verify",
+              "api-reference/endpoint/settle"
             ]
           }
         ]

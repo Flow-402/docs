@@ -1,217 +1,331 @@
 {
-  "openapi": "3.1.0",
-  "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+	"openapi": "3.1.0",
+	"info": { "title": "x402 Facilitator", "version": "0.1.0" },
+	"paths": {
+		"/health": {
+			"get": {
+				"tags": ["health"],
+				"summary": "Health",
+				"description": "Check Flow402 API state.",
+				"operationId": "health_health_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HealthResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/supported": {
+			"get": {
+				"tags": ["x402"],
+				"summary": "Flow402 Supported",
+				"description": "Returns x402 schemas/networks supported by Flow402.",
+				"operationId": "flow402_supported_supported_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SupportedResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/verify": {
+			"post": {
+				"tags": ["x402"],
+				"summary": "Flow402 Verify",
+        "description": "Create a PaymentIntent in database that needs to be settled.",
+				"operationId": "flow402_verify_verify_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/VerifySimpleRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/VerifyResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/settle": {
+			"post": {
+				"tags": ["x402"],
+				"summary": "Flow402 Settle",
+				"description": "Verify proof on-chain and settle PaymentIntent.",
+				"operationId": "flow402_settle_settle_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SettleSimpleRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SettleResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
+			"SettleResponse": {
+				"properties": {
+					"settled": {
+						"type": "boolean",
+						"title": "Settled",
+						"examples": [true]
+					},
+					"txHash": {
+						"type": "string",
+						"title": "Txhash",
+						"examples": ["0x...merchantTx"]
+					},
+					"receipt": {
+						"additionalProperties": true,
+						"type": "object",
+						"title": "Receipt",
+						"examples": [
+							{
+								"amount": "0.50",
+								"currency": "USDC",
+								"facilitatorRecipient": "0x...facilitator",
+								"fee": "0.005",
+								"feeTxHash": "0x...feeTx",
+								"intentId": "pi_...",
+								"merchant": "0x...merchant",
+								"network": "base-sepolia"
+							}
+						]
+					}
+				},
+				"type": "object",
+				"required": ["settled", "txHash"],
+				"title": "SettleResponse"
+			},
+			"SettleSimpleRequest": {
+				"properties": {
+					"nonce": {
+						"type": "string",
+						"title": "Nonce",
+						"examples": ["uniq-generated-string-from-flow402"]
+					},
+					"txHash": {
+						"type": "string",
+						"title": "Txhash",
+						"example": ["0x...merchantTx"]
+					},
+					"feeTxHash": {
+						"anyOf": [{ "type": "string" }, { "type": "null" }],
+						"title": "Feetxhash",
+						"example": ["0x...feeTx"]
+					},
+					"intentId": {
+						"type": "string",
+						"title": "Intentid",
+						"examples": ["pi_..."]
+					}
+				},
+				"type": "object",
+				"required": ["nonce", "txHash", "intentId"],
+				"title": "SettleSimpleRequest"
+			},
+			"SupportedKind": {
+				"properties": {
+					"x402Version": {
+						"type": "integer",
+						"title": "X402Version",
+						"default": 1,
+						"examples": [1]
+					},
+					"scheme": {
+						"type": "string",
+						"title": "Scheme",
+						"default": "exact"
+					},
+					"network": { "type": "string", "title": "Network" }
+				},
+				"type": "object",
+				"required": ["network"],
+				"title": "SupportedKind"
+			},
+			"SupportedResponse": {
+				"properties": {
+					"kinds": {
+						"items": {
+							"$ref": "#/components/schemas/SupportedKind"
+						},
+						"type": "array",
+						"title": "Kinds"
+					}
+				},
+				"type": "object",
+				"required": ["kinds"],
+				"title": "SupportedResponse"
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [
+								{ "type": "string" },
+								{ "type": "integer" }
+							]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": { "type": "string", "title": "Message" },
+					"type": { "type": "string", "title": "Error Type" }
+				},
+				"type": "object",
+				"required": ["loc", "msg", "type"],
+				"title": "ValidationError"
+			},
+			"VerifyResponse": {
+				"properties": {
+					"verified": {
+						"type": "boolean",
+						"title": "Verified",
+						"examples": [true]
+					},
+					"intentId": {
+						"type": "string",
+						"title": "Intentid",
+						"examples": ["pi_..."]
+					},
+					"nonce": {
+						"type": "string",
+						"title": "Nonce",
+						"examples": ["uniq-generated-string-from-flow402"]
+					},
+					"expiresAt": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Expiresat"
+					}
+				},
+				"type": "object",
+				"required": ["verified", "intentId", "nonce", "expiresAt"],
+				"title": "VerifyResponse"
+			},
+			"VerifySimpleRequest": {
+				"properties": {
+					"from": { "type": "string", "title": "From" },
+					"to": { "type": "string", "title": "To" },
+					"amount": {
+						"anyOf": [
+							{ "type": "number" },
+							{
+								"type": "string",
+								"pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+							}
+						],
+						"title": "Amount"
+					},
+					"network": {
+						"type": "string",
+						"title": "Network",
+						"default": "base"
+					},
+					"scheme": {
+						"type": "string",
+						"title": "Scheme",
+						"default": "exact"
+					}
+				},
+				"type": "object",
+				"required": ["from", "to", "amount"],
+				"title": "VerifySimpleRequest"
+			},
+      "HealthResponse": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "status": {
+            "description": "The status of Flow402 facilitator",
+            "type": "string",
+            "examples": ["ok"]
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "time": {
+            "description": "The datetime of the given response",
+            "type": "string",
+            "examples": ["2025-12-31T12:00:00.000+00:00"]
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
-  }
+		}
+	},
+	"tags": [
+		{ "name": "health", "description": "Facilitator status & monitoring." },
+		{ "name": "x402", "description": "X402 endpoints." }
+	]
 }
