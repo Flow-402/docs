@@ -1,17 +1,17 @@
 {
 	"openapi": "3.1.0",
 	"info": {
-    "title": "Flow402 - x402 Facilitator for USDC",
-    "version": "1.0.0",
-    "license": {
-      "name": "MIT"
-    }
-  },
-  "servers": [
-    {
-      "url": "https://api.flow402.net"
-    }
-  ],
+		"title": "Flow402 - x402 Facilitator for USDC",
+		"version": "1.0.0",
+		"license": {
+			"name": "MIT"
+		}
+	},
+	"servers": [
+		{
+			"url": "https://api.flow402.net"
+		}
+	],
 	"paths": {
 		"/health": {
 			"get": {
@@ -57,7 +57,7 @@
 			"post": {
 				"tags": ["x402"],
 				"summary": "Flow402 Verify",
-        "description": "Create a PaymentIntent in database that needs to be settled.",
+				"description": "Create a PaymentIntent in database that needs to be settled.",
 				"operationId": "flow402_verify_verify_post",
 				"requestBody": {
 					"content": {
@@ -221,13 +221,22 @@
 						"type": "string",
 						"title": "Scheme",
 						"default": "exact",
-            "examples": ["exact", "transfer"]
+						"examples": ["exact", "transfer"]
 					},
 					"network": {
-            "type": "string",
-            "title": "Network",
-            "examples": ["base", "base-sepolia"]
-          }
+						"type": "string",
+						"title": "Network",
+						"examples": [
+							"base",
+							"base-sepolia",
+							"arbitrum-one",
+							"arbitrum-sepolia",
+							"optimism",
+							"optimism-sepolia",
+							"solana",
+							"solana-devnet"
+						]
+					}
 				},
 				"type": "object",
 				"title": "SupportedKind"
@@ -293,17 +302,17 @@
 			"VerifySimpleRequest": {
 				"properties": {
 					"from": {
-            "description": "Payer USDC address",
-            "type": "string",
-            "title": "From",
-            "examples": ["0x...payerAddress"]
-          },
+						"description": "Payer USDC address",
+						"type": "string",
+						"title": "From",
+						"examples": ["0x...payerAddress"]
+					},
 					"to": {
-            "description": "Merchant USDC address",
-            "type": "string",
-            "title": "To",
-            "examples": ["0x...merchantAddress"]
-          },
+						"description": "Merchant USDC address",
+						"type": "string",
+						"title": "To",
+						"examples": ["0x...merchantAddress"]
+					},
 					"amount": {
 						"anyOf": [
 							{ "type": "number" },
@@ -318,34 +327,43 @@
 						"type": "string",
 						"title": "Network",
 						"default": "base",
-            "examples": ["base", "base-sepolia"]
+						"examples": [
+							"base",
+							"base-sepolia",
+							"arbitrum-one",
+							"arbitrum-sepolia",
+							"optimism",
+							"optimism-sepolia",
+							"solana",
+							"solana-devnet"
+						]
 					},
 					"scheme": {
 						"type": "string",
 						"title": "Scheme",
 						"default": "exact",
-            "examples": ["exact", "transfer"]
+						"examples": ["exact", "transfer"]
 					}
 				},
 				"type": "object",
 				"required": ["from", "to", "amount", "network", "scheme"],
 				"title": "VerifySimpleRequest"
 			},
-      "HealthResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "description": "The status of Flow402 facilitator",
-            "type": "string",
-            "examples": ["ok"]
-          },
-          "time": {
-            "description": "The datetime of the given response",
-            "type": "string",
-            "examples": ["2025-12-31T12:00:00.000+00:00"]
-          }
-        }
-      }
+			"HealthResponse": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"description": "The status of Flow402 facilitator",
+						"type": "string",
+						"examples": ["ok"]
+					},
+					"time": {
+						"description": "The datetime of the given response",
+						"type": "string",
+						"examples": ["2025-12-31T12:00:00.000+00:00"]
+					}
+				}
+			}
 		}
 	},
 	"tags": [
