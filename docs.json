@@ -47,6 +47,17 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Model Context Protocol",
+        "groups": [
+          {
+            "group": "MCP",
+            "pages": [
+              "mcp/overview"
+            ]
+          }
+        ]
       }
     ]
   },

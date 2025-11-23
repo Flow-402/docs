@@ -1,0 +1,109 @@
+---
+title: 'Overview'
+description: 'Using Flow402 MCP in your favorite LLM.'
+---
+
+## What is MCP?
+
+MCP (Model Context Protocol) is an open standard that lets your favorite LLM connects to tools and data sources from external services.
+
+Flow402 offers an MCP server that allows you to interact with its endpoints directly from your AI agent.
+
+
+## Usage
+
+Learn how to configure and use Flow402 MCP into various editors.
+
+<Tabs>
+  <Tab title="ChatGPT">
+    Chat mode lets you use MCP in ChatGPT conversations. Check [ChatGPT Developer Mode](https://platform.openai.com/docs/guides/developer-mode) for the latest requirements.
+    <Steps>
+      <Step title="Enable Developer Mode">
+        1. Open ChatGPT and go to **Settings -> Connectors**
+        2. Under **Advanced settings**, toggle the **Developer mode**.
+      </Step>
+      <Step title="Create Connector">
+        1. In **Settings** -> **Connectors**, click **Create**.
+        2. Enter `Flow402` for the **Name** and `https://mcp.flow402.net` for the **Server URL**.
+        3. Select **No authentication**.
+        4. Check _I understand and want to continue_.
+        5. Click **Create**.
+      </Step>
+      <Step title="Use in Chat">
+        1. Start a new chat.
+        2. Click on **+**, then **More** and select the new Flow402 connector.
+        3. Now you can use Flow402 tools.
+
+        Examples:
+          - "Give me the list of supported networks."
+          - "Verify that there is a payment of 1 USDC on Solana network from 0xPAYER_ADDRESS to 0xMERCHANT_ADDRESS."
+          - "Settle a payment for intent pi_1xB8cK."
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude Desktop">
+    <Steps>
+      <Step title="Add the Connector">
+        1. Navigate to the **Connectors** in settings.
+        2. Select **Add custom connector**.
+        3. Enter `Flow402` for the **Name** and `https://mcp.flow402.net` for the **URL**.
+        4. Select **Add**.
+      </Step>
+      <Step title="Use Connector">
+        1. When using Claude, select the attachments button (**+** icon).
+        2. Select Flow402 new connector.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Cursor">
+    <Steps>
+      <Step title="Install the MCP Server">
+        1. In Cursor, go to **File -> Preferences -> Cursor Settings**.
+        2. Select **Tools & MCP** menu entry.
+        3. Click on **New MCP Server**.
+        3. If you haven't got one already, a new `mcp.json` file will open.
+        4. Add Flow402 MCP to it. You should have this code:
+        ```json mcp.json lines
+        {
+          "mcpServers": {
+            "flow402": {
+              "type": "http",
+              "url": "https://mcp.flow402.net"
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="Use in Agent mode">
+        1. Open a new Chat, and select **Agent** mode.
+        2. Now you can use Flow402 tools.
+
+        Examples:
+          - "Using Flow402 tools, give me the list of supported networks."
+          - "Using Flow402 tools, verify that there is a payment of 1 USDC on Solana network from 0xPAYER_ADDRESS to 0xMERCHANT_ADDRESS."
+          - "Using Flow402 tools, settle a payment for intent pi_1xB8cK."
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="VS Code">
+    <Steps>
+      <Step title="Install the MCP Server">
+        1. Create a `.vscode/mcp.json` file in your workspace.
+        2. Add Flow402 MCP to it. You should have this code:
+        ```json mcp.json lines
+        {
+          "servers": {
+            "flow402": {
+              "type": "http",
+              "url": "https://mcp.flow402.net"
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="Usage">
+      Check [VS Code documentation](https://code.visualstudio.com/docs/copilot/chat/mcp-servers) for more details.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
